@@ -1,0 +1,273 @@
+﻿<Window
+    x:Class="Nyp3rCalender.DateWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:Nyp3rCalender"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Title="DateWindow"
+    Width="300"
+    Height="600"
+    mc:Ignorable="d">
+
+    <Window.Resources>
+        <Style x:Key="textAlignment" TargetType="TextBlock">
+            <Setter Property="TextAlignment" Value="Center" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="Height" Value="16" />
+        </Style>
+    </Window.Resources>
+
+    <Grid x:Name="dateGrid">
+        <Grid.RowDefinitions>
+            <RowDefinition />
+            <RowDefinition Height="60" />
+        </Grid.RowDefinitions>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition />
+                <RowDefinition Height="2*" />
+                <RowDefinition Height="4*" />
+                <RowDefinition Height="2*" />
+                <RowDefinition />
+                <RowDefinition />
+                <RowDefinition Height="4*" />
+            </Grid.RowDefinitions>
+            <ComboBox
+                x:Name="eventPicker"
+                Margin="5"
+                HorizontalContentAlignment="Center"
+                FontSize="15" />
+
+            <Grid Grid.Row="1" Margin="5">
+                <Grid.RowDefinitions>
+                    <RowDefinition />
+                    <RowDefinition />
+                </Grid.RowDefinitions>
+                <TextBox x:Name="eventTitle" VerticalContentAlignment="Center" />
+                <TextBlock
+                    x:Name="bgTitle"
+                    Grid.Row="0"
+                    Margin="5"
+                    Foreground="Gray"
+                    IsHitTestVisible="False"
+                    Text="Title" />
+                <TextBox
+                    x:Name="location"
+                    Grid.Row="1"
+                    VerticalContentAlignment="Center" />
+                <TextBlock
+                    x:Name="bgLocation"
+                    Grid.Row="1"
+                    Margin="5"
+                    Foreground="Gray"
+                    IsHitTestVisible="False"
+                    Text="Location" />
+            </Grid>
+
+            <Grid Grid.Row="2" Margin="5">
+                <Grid.RowDefinitions>
+                    <RowDefinition />
+                    <RowDefinition />
+                    <RowDefinition />
+                    <RowDefinition />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="0.5*" />
+                    <ColumnDefinition />
+                    <ColumnDefinition Width="0.5*" />
+                </Grid.ColumnDefinitions>
+                <TextBlock
+                    Height="16"
+                    Style="{StaticResource textAlignment}"
+                    Text="Whole day" />
+                <CheckBox
+                    x:Name="wholeDay"
+                    Grid.Column="2"
+                    Padding="3,0,0,0"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Center" />
+
+                <TextBlock
+                    Grid.Row="1"
+                    Style="{StaticResource textAlignment}"
+                    Text="Starts" />
+                <Grid Grid.Row="1" Grid.Column="2">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+                    <ComboBox
+                        x:Name="startHour"
+                        Grid.Column="0"
+                        Margin="2" />
+                    <ComboBox
+                        x:Name="startMinute"
+                        Grid.Column="1"
+                        Margin="2" />
+                </Grid>
+                <Grid Grid.Row="2" Grid.Column="2">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+                    <ComboBox
+                        x:Name="endHour"
+                        Grid.Column="0"
+                        Margin="2" />
+                    <ComboBox
+                        x:Name="endMinute"
+                        Grid.Column="1"
+                        Margin="2" />
+                </Grid>
+                <TextBlock
+                    Grid.Row="2"
+                    Style="{StaticResource textAlignment}"
+                    Text="Ends" />
+                <DatePicker
+                    x:Name="endDate"
+                    Grid.Row="2"
+                    Grid.Column="1"
+                    Height="23" />
+
+                <TextBlock
+                    Grid.Row="3"
+                    Style="{StaticResource textAlignment}"
+                    Text="Travel time" />
+                <Grid Grid.Row="3" Grid.Column="2">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+                    <ComboBox
+                        x:Name="travelHour"
+                        Grid.Column="0"
+                        Margin="2" />
+                    <ComboBox
+                        x:Name="travelMinute"
+                        Grid.Column="1"
+                        Margin="2" />
+                </Grid>
+            </Grid>
+
+            <Grid Grid.Row="3" Margin="5">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="0.5*" />
+                    <ColumnDefinition />
+                    <ColumnDefinition Width="0.5*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition />
+                    <RowDefinition />
+                </Grid.RowDefinitions>
+                <TextBlock Style="{StaticResource textAlignment}" Text="Repeat" />
+                <ComboBox
+                    x:Name="repeatPicker"
+                    Grid.Column="2"
+                    Margin="2">
+                    <ComboBoxItem Content="Every day" />
+                    <ComboBoxItem Content="Every week" />
+                    <ComboBoxItem Content="Every second week" />
+                    <ComboBoxItem Content="Every month" />
+                    <ComboBoxItem Content="Every year" />
+                </ComboBox>
+
+                <TextBlock
+                    Grid.Row="1"
+                    Style="{StaticResource textAlignment}"
+                    Text="End repeat" />
+                <DatePicker
+                    x:Name="endRepeatDate"
+                    Grid.Row="1"
+                    Grid.Column="1"
+                    Height="23" />
+                <CheckBox
+                    x:Name="repeatNever"
+                    Grid.Row="1"
+                    Grid.Column="2"
+                    Padding="3,0,0,0"
+                    HorizontalAlignment="Right"
+                    VerticalContentAlignment="Center"
+                    IsChecked="True" />
+                <TextBlock
+                    Grid.Row="1"
+                    Grid.Column="2"
+                    Margin="0,3,0,0"
+                    VerticalAlignment="Top"
+                    Style="{StaticResource textAlignment}"
+                    Text="Never" />
+            </Grid>
+
+            <Grid Grid.Row="4" Margin="5">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="0.5*" />
+                    <ColumnDefinition />
+                    <ColumnDefinition Width="0.5*" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Style="{StaticResource textAlignment}" Text="Color" />
+                <ComboBox x:Name="colorPicker" Grid.Column="2" />
+            </Grid>
+
+            <Grid Grid.Row="5" Margin="5">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="0.5*" />
+                    <ColumnDefinition />
+                    <ColumnDefinition Width="0.5*" />
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Style="{StaticResource textAlignment}" Text="Alert" />
+                <ComboBox x:Name="alert" Grid.Column="2">
+                    <ComboBoxItem Content="None" />
+                    <ComboBoxItem Content="When the event begins" />
+                    <ComboBoxItem Content="5 minutes before" />
+                    <ComboBoxItem Content="10 minutes before" />
+                    <ComboBoxItem Content="15 minutes before" />
+                    <ComboBoxItem Content="30 minutes before" />
+                    <ComboBoxItem Content="1 hour before" />
+                    <ComboBoxItem Content="2 hour before" />
+                    <ComboBoxItem Content="1 day before" />
+                    <ComboBoxItem Content="2 day before" />
+                    <ComboBoxItem Content="1 week before" />
+                </ComboBox>
+            </Grid>
+
+            <RichTextBox
+                x:Name="description"
+                Grid.Row="6"
+                Margin="5" />
+            <TextBlock
+                x:Name="bgDescription"
+                Grid.Row="6"
+                Margin="5"
+                Padding="3,0"
+                Foreground="Gray"
+                IsHitTestVisible="False"
+                Text="Description" />
+        </Grid>
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            <Button
+                Grid.Column="2"
+                Background="LightBlue"
+                Content="+"
+                FontSize="30" />
+            <Button
+                Grid.Column="0"
+                Background="LightBlue"
+                Content="Save"
+                FontSize="10"
+                FontWeight="Light" />
+            <Button
+                Grid.Column="1"
+                Background="LightBlue"
+                Content="Remove"
+                FontSize="10"
+                FontWeight="Light" />
+        </Grid>
+    </Grid>
+</Window>
