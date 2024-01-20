@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
@@ -19,29 +22,109 @@ namespace Nyp3rCalender
     /// </summary>
     public partial class DateWindow : Window
     {
+        string startHourM;
+        string endHourM;
+        string startMinuteM;
+        string endMinuteM;
+        string endDateM;
+        string travelHourM;
+        string travelMinuteM;
+        string endRepeatDateM;
+
         List<Event> events_ = new List<Event>();
-        public DateWindow(int day, List<Event> events)
+        private int month_;
+        private int day_;
+        public DateWindow(int month,int day, List<Event> events)
         {
+            day_ = day;
+            month_ = month;
             events_ = events;
             InitializeComponent();
-            Title = "Day " + day.ToString();
-            foreach (Event e in events)
-            {
-                eventPicker.Items.Add(e.Name);
-            }
 
+            colorPicker.ItemsSource = ColorNames_Get();
 
-            eventPicker.SelectionChanged += EventPicked;
-            
+            eventPicker.SelectionChanged += Event_Picked;
+
             eventTitle.GotFocus += Title_Focused;
             eventTitle.LostFocus += Title_Unfocused;
+            eventTitle.TextChanged += Title_Focused;
 
             location.GotFocus += Location_Focused;
             location.LostFocus += Location_Unfocused;
+            location.TextChanged += Location_Focused;
 
             description.GotFocus += Description_Focused;
             description.LostFocus += Description_Unfocused;
             description.TextChanged += Description_Focused;
+
+            wholeDay.Checked += WholeDay_Checked;
+            wholeDay.Unchecked += WholeDay_Unchecked;
+
+            insertSameDay.Click += InsertSameDay_Click;
+            endDate.LostFocus += EndDate_Unfocused;
+
+            repeatNever.Checked += NeverEndRepeat_Checked;
+            repeatNever.Unchecked += NeverEndRepeat_Unchecked;
+
+            add.Click += Event_Add;
+            save.Click += Event_Save;
+
+
+
+            Title = "Day " + day.ToString();
+            eventPicker.Items.Add("New event");
+            foreach (Event e in events)
+            {
+                eventPicker.Items.Add(e.Name);
+            }
+            eventPicker.SelectedIndex = (eventPicker.Items.Count >= 2) ? 1 : 0;
+            for (int i = 0; i < 24; i++)
+            {
+                startHour.Items.Add(i.ToString());
+                endHour.Items.Add(i.ToString());
+                travelHour.Items.Add(i.ToString());
+            }
+            for (int i = 0; i < 60; i += 5)
+            {
+                startMinute.Items.Add(i.ToString());
+                endMinute.Items.Add(i.ToString());
+                travelMinute.Items.Add(i.ToString());
+            }
+
+            repeatPicker.Items.Add("Never");
+            repeatPicker.Items.Add("Every day");
+            repeatPicker.Items.Add("Every week");
+            repeatPicker.Items.Add("Every second\nweek");
+            repeatPicker.Items.Add("Every month");
+            repeatPicker.Items.Add("Every year");
+
+            alert.Items.Add("None");
+            alert.Items.Add("When the\nevent begins");
+            alert.Items.Add("5 minutes\nbefore");
+            alert.Items.Add("10 minutes\nbefore");
+            alert.Items.Add("15 minutes\nbefore");
+            alert.Items.Add("30 minutes\nbefore");
+            alert.Items.Add("1 hour\nbefore");
+            alert.Items.Add("2 hour\nbefore");
+            alert.Items.Add("1 day\nbefore");
+            alert.Items.Add("2 days\nbefore");
+            alert.Items.Add("1 week\nbefore");
+        }
+        private List<string> ColorNames_Get()
+        {
+            List<string> colorNames = new List<string>();
+
+            // Get all public static properties from the Colors class
+            Type colorsType = typeof(Colors);
+            PropertyInfo[] colorProperties = colorsType.GetProperties(BindingFlags.Public | BindingFlags.Static);
+
+            // Add each color name to the list
+            foreach (var property in colorProperties)
+            {
+                colorNames.Add(property.Name);
+            }
+
+            return colorNames;
         }
 
         public void Title_Focused(object sender, RoutedEventArgs e) 
@@ -74,15 +157,265 @@ namespace Nyp3rCalender
             }
         }
 
-        public void EventPicked(object sender, RoutedEventArgs e)
+        public void WholeDay_Checked(object sender, RoutedEventArgs e)
         {
-            string pickedEventName = (sender as ComboBox).SelectedItem.ToString();
+            startHour.IsEnabled = false;
+            startMinute.IsEnabled = false;
+            endDate.IsEnabled = false;
+            endHour.IsEnabled = false;
+            endMinute.IsEnabled = false;
+            travelHour.IsEnabled = false;
+            travelMinute.IsEnabled = false;
+            insertSameDay.IsEnabled = false;
 
-            Event pickedEvent = events_.FirstOrDefault(e => e.Name == pickedEventName);
+            startHourM = startHour.Text;
+            endHourM = endHour.Text;
+            startMinuteM = startMinute.Text;
+            endMinuteM = endMinute.Text;
+            endDateM = endDate.Text;
+            travelHourM = travelHour.Text;
+            travelMinuteM = travelMinute.Text;
+
+            startHour.Text = string.Empty;
+            startMinute.Text = string.Empty;
+            endHour.Text = string.Empty;
+            endMinute.Text = string.Empty;
+            endDate.Text = string.Empty;
+            travelHour.Text = string.Empty;
+            travelMinute.Text = string.Empty;
+        }
+        public void WholeDay_Unchecked(object sender, RoutedEventArgs e)
+        {
+            startHour.IsEnabled = true;
+            startMinute.IsEnabled = true;
+            endDate.IsEnabled = true;
+            endHour.IsEnabled = true;
+            endMinute.IsEnabled = true;
+            travelHour.IsEnabled = true;
+            travelMinute.IsEnabled = true;
+            if(endDateM == string.Empty) { insertSameDay.IsEnabled = true; } 
+            else{ insertSameDay.IsEnabled = (Convert.ToInt16(endDateM[0] + endDateM[1]) != day_ && Convert.ToInt16(endDateM[3] + endDateM[4]) != month_) ? true : false; }
+
+            startHour.Text = startHourM;
+            startMinute.Text = startMinuteM;
+            endHour.Text = endHourM;
+            endMinute.Text = endMinuteM;
+            endDate.Text = endDateM;
+            travelHour.Text = travelHourM;
+            travelMinute.Text = travelMinuteM;
+
+            startHourM = string.Empty;
+            startMinuteM = string.Empty;
+            endHourM = string.Empty;
+            endMinuteM = string.Empty;
+            endDateM = string.Empty;
+            travelHourM = string.Empty;
+            travelMinuteM = string.Empty;
+
+        }
+
+        public void InsertSameDay_Click(object sender, RoutedEventArgs e)//Currently being worked on
+        {
+            endDate.Text = $"{day_}-{month_}-2024";
+            ((Button)sender).IsEnabled = false;
+        }
+
+        public void EndDate_Unfocused(object sender, RoutedEventArgs e)//Currently being worked on
+        {
+            if(((DatePicker)sender).Text != $"{day_}-{month_}-2024")
+            {
+                insertSameDay.IsEnabled = true;
+            }
+        }
+
+        public void NeverEndRepeat_Checked(object sender, RoutedEventArgs e)
+        {
+            endRepeatDateM = endRepeatDate.Text;
+            endRepeatDate.Text = string.Empty;
+            endRepeatDate.IsEnabled = false;
+        }
+
+        public void NeverEndRepeat_Unchecked(object sender, RoutedEventArgs e)
+        {
+            endRepeatDate.IsEnabled = true;
+            endRepeatDate.Text = endRepeatDateM;
+            endRepeatDateM = string.Empty;
+        }
+
+        public void Event_Picked(object sender, RoutedEventArgs e)
+        {
+            if(((ComboBox)sender).SelectedItem == null) 
+            {
+                return;
+            }
+
+            string? pickedEventName = ((ComboBox)sender).SelectedItem.ToString();
+
+            Event? pickedEvent = events_.FirstOrDefault(e => e.Name == pickedEventName);
+
+            if(pickedEvent == null) 
+            {
+                return;
+            }
 
             description.Document.Blocks.Clear();
             TextRange textRange = new TextRange(description.Document.ContentStart, description.Document.ContentEnd);
             textRange.Text = pickedEvent.Description;
+
+            eventTitle.Text = pickedEvent.Name;
+            location.Text = pickedEvent.Location;
+            wholeDay.IsChecked = pickedEvent.IsWholeDay;
+            if (pickedEvent.IsWholeDay)
+            {
+                startHour.IsEnabled = false;
+                startMinute.IsEnabled = false;
+                endDate.IsEnabled = false;
+                endHour.IsEnabled = false;
+                endMinute.IsEnabled = false;
+                travelHour.IsEnabled = false;
+                travelMinute.IsEnabled = false;
+                insertSameDay.IsEnabled = false;
+            }
+            else
+            {
+                startHour.SelectedValue = pickedEvent.StartDateTime.Hour.ToString();
+                startMinute.SelectedValue = pickedEvent.StartDateTime.Minute.ToString();
+                
+                endDate.Text = pickedEvent.EndDateTime.Date.ToString();
+                endHour.SelectedValue = pickedEvent.EndDateTime.Hour.ToString();
+                endMinute.SelectedValue = pickedEvent.EndDateTime.Minute.ToString();
+
+                travelHour.SelectedValue = pickedEvent.TravelTime.Hours.ToString();
+                travelMinute.SelectedValue = pickedEvent.TravelTime.Minutes.ToString();
+
+
+                repeatPicker.SelectedValue = pickedEvent.Repeat;
+                repeatNever.IsChecked = pickedEvent.RepeatDoesntEnd;
+
+                if (pickedEvent.RepeatDoesntEnd)
+                {
+                    endRepeatDate.IsEnabled = false;
+                }
+                else
+                {
+                    endRepeatDate.Text = pickedEvent.EndRepeatDate.ToLongDateString();
+                }
+
+
+                colorPicker.SelectedValue = pickedEvent.Color.Name;
+                alert.SelectedValue =  pickedEvent.AlertBefore;
+            }
+        }
+
+        public void Event_Add(object sender, EventArgs e)
+        {
+            ClearUIInfo();
+            remove.IsEnabled = false;
+            eventTitle.Focus();
+            eventPicker.SelectedIndex = 0;
+        }
+
+        public void Event_Save(object sender, EventArgs e)
+        {   //check if it's filled in correctly
+            if (!IsFilledIn())
+            {
+                return;
+            }
+
+            //adds a new event if it's on the new event option
+            if (eventPicker.SelectedIndex == 0)
+            {
+                Event newEvent = new(eventTitle.Text, location.Text, new TextRange(description.Document.ContentStart, description.Document.ContentEnd).Text, System.Drawing.Color.FromName(colorPicker.Text), (bool)wholeDay.IsChecked, repeatPicker.Text, (bool)repeatNever.IsChecked, alert.Text);
+                if (wholeDay.IsChecked == false)
+                {
+                    newEvent.StartDateTime = new DateTime(2024, month_, day_, Convert.ToInt16(startHour.Text), Convert.ToInt16(startMinute.Text), 0);
+                    newEvent.EndDateTime = new DateTime(2024, endDate.DisplayDate.Month, endDate.DisplayDate.Day, Convert.ToInt16(endHour.Text), Convert.ToInt16(endMinute.Text), 0);
+                    newEvent.TravelTime = new TimeSpan(0, Convert.ToInt16(travelHour.Text), Convert.ToInt16(travelMinute.Text), 0);
+                }
+                if (repeatNever.IsChecked == false)
+                {
+                    newEvent.EndRepeatDate = new DateOnly(2024, endRepeatDate.DisplayDate.Month, endRepeatDate.DisplayDate.Day);
+                }
+                events_.Add(newEvent);
+                eventPicker.Items.Add(newEvent.Name);
+
+                eventPicker.SelectedIndex = eventPicker.Items.Count-1;
+                return;
+            }
+
+            //saves existing event
+            int i = eventPicker.SelectedIndex - 1;
+            events_[i].Name = eventTitle.Text;
+            events_[i].Location = location.Text;
+            events_[i].IsWholeDay = (wholeDay.IsChecked != null) ? (bool)wholeDay.IsChecked : false;
+            if (wholeDay.IsChecked == null || !(bool)wholeDay.IsChecked)
+            {
+                events_[i].StartDateTime = new DateTime(2024, month_, day_, Convert.ToInt16(startHour.Text), Convert.ToInt16(startMinute.Text), 0);
+                events_[i].EndDateTime = new DateTime(2024, endDate.DisplayDate.Month, endDate.DisplayDate.Day, Convert.ToInt16(endHour.Text), Convert.ToInt16(endMinute.Text), 0);
+                events_[i].TravelTime = new TimeSpan(0, Convert.ToInt16(travelHour.Text), Convert.ToInt16(travelMinute.Text), 0); 
+            }
+            events_[i].Repeat = repeatPicker.Text;
+            events_[i].RepeatDoesntEnd = (repeatNever.IsChecked != null) ? (bool)repeatNever.IsChecked : false;
+            if (!events_[i].RepeatDoesntEnd){events_[i].EndRepeatDate = new DateOnly(2024, endRepeatDate.DisplayDate.Month, endRepeatDate.DisplayDate.Day);}            
+            events_[i].Color = System.Drawing.Color.FromName(colorPicker.Text);
+            events_[i].AlertBefore = alert.Text;
+            events_[i].Description = new TextRange(description.Document.ContentStart, description.Document.ContentEnd).Text;
+            Event.Save(events_[0]);
+        }
+
+        private void ClearUIInfo()
+        {
+            eventPicker.SelectedItem = null;
+            eventTitle.Text = string.Empty;
+            location.Text = string.Empty;
+            wholeDay.IsChecked = false;
+            startHour.SelectedItem = null;
+            startMinute.SelectedItem = null;
+            endDate.Text = string.Empty;
+            endHour.SelectedItem = null;
+            endMinute.SelectedItem = null;
+            travelHour.SelectedItem = null;
+            travelMinute.SelectedItem = null;
+            repeatPicker.SelectedItem = null;
+            endRepeatDate.Text = string.Empty;
+            repeatNever.IsChecked = true;
+            colorPicker.SelectedItem = null;
+            alert.SelectedItem = null;
+            description.Document.Blocks.Clear();
+        }
+
+        private bool IsFilledIn()
+        {
+            TextRange textRange = new TextRange(description.Document.ContentStart, description.Document.ContentEnd);
+            if (eventTitle.Text != string.Empty && repeatPicker.SelectedItem.ToString() != string.Empty && colorPicker.SelectedItem.ToString() != string.Empty && alert.SelectedItem.ToString() != string.Empty && textRange.Text != string.Empty)
+            {
+                if (wholeDay.IsChecked == true && repeatNever.IsChecked == true)
+                {
+                    return true;
+                }
+                else if (wholeDay.IsChecked == false && repeatNever.IsChecked == false)
+                {
+                    if(startHour.SelectedItem.ToString() != string.Empty && startMinute.SelectedItem.ToString() != string.Empty && endDate.Text != string.Empty && endHour.SelectedItem.ToString() != string.Empty && endMinute.SelectedItem.ToString() != string.Empty && travelHour.SelectedItem.ToString() != string.Empty && travelMinute.SelectedItem.ToString() != string.Empty && endRepeatDate.Text != string.Empty)
+                    {
+                        return true;
+                    }
+                }
+                else if (wholeDay.IsChecked == true && repeatNever.IsChecked == false)
+                {
+                    if (endRepeatDate.Text != string.Empty)
+                    {
+                        return true;
+                    }
+                }
+                else if(wholeDay.IsChecked == false && repeatNever.IsChecked == true)
+                {
+                    if (startHour.SelectedItem.ToString() != string.Empty && startMinute.SelectedItem.ToString() != string.Empty && endDate.Text != string.Empty && endHour.SelectedItem.ToString() != string.Empty && endMinute.SelectedItem.ToString() != string.Empty && travelHour.SelectedItem.ToString() != string.Empty && travelMinute.SelectedItem.ToString() != string.Empty)
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
     }
 }

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows.Media;
+using System.Drawing;
 
 namespace Nyp3rCalender
 {
@@ -22,13 +22,9 @@ namespace Nyp3rCalender
             WeekDayStartIndex = weekDayStartIndex;
         }
 
-        public void addEvent(string name, string description, Color color, int day, TimeOnly time)
+        public void addEvent(string? name, string? location, string? description, Color color, bool isWholeDay, string? repeat, bool repeatDoesntEnd, string? aleartBefore)
         {
-            Events.Add(new Event(name,description,color,day,time));
-        }
-        public void addEvent(string name, string description, Color color, int day)
-        {
-            Events.Add(new Event(name, description, color, day));
+            Events.Add(new Event(name,location,description,color,isWholeDay,repeat,repeatDoesntEnd,aleartBefore));
         }
     }
 }

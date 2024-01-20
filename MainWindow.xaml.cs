@@ -8,7 +8,6 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using System.Media;
 using System.Drawing;
 
 namespace Nyp3rCalender
@@ -40,12 +39,12 @@ namespace Nyp3rCalender
 
         public void NextMonth(object sender, RoutedEventArgs e)
         {
-            monthIndex = (monthIndex < months.Count-1) ? monthIndex + 1 : monthIndex = 0;
+            monthIndex = (monthIndex < months.Count - 1) ? monthIndex + 1 : 0;
             RefreshWindow();
         }
         public void PreviousMonth(object sender, RoutedEventArgs e)
         {
-            monthIndex = (monthIndex > 0) ? monthIndex - 1 : monthIndex = months.Count - 1;
+            monthIndex = (monthIndex > 0) ? monthIndex - 1 : months.Count - 1;
             RefreshWindow();
         }
 
@@ -143,8 +142,11 @@ namespace Nyp3rCalender
         public void DateClick(object sender, EventArgs e)
         {
             int currentMonthDay = (int)(sender as Button).Tag;
-            months[monthIndex].addEvent("Birthday","My 21st Birthday",System.Windows.Media.Color.FromArgb(0,55,55,55),currentMonthDay);
-            DateWindow dateWindow = new DateWindow(currentMonthDay, months[monthIndex].Events);
+            months[monthIndex].addEvent("Platform meeting", "Skolegade 7", "Meeting with members of Platform. Including: Hans and Nina", System.Drawing.Color.AliceBlue, false, "Every second\nweek", true, "1 day\nbefore");
+            months[monthIndex].Events[0].StartDateTime = new DateTime(2024,monthIndex+1,currentMonthDay,14,30,0);
+            months[monthIndex].Events[0].EndDateTime = new DateTime(2024, monthIndex+1, currentMonthDay, 15, 0, 0);
+            months[monthIndex].Events[0].TravelTime = TimeSpan.FromMinutes(0);
+            DateWindow dateWindow = new DateWindow(monthIndex+1,currentMonthDay, months[monthIndex].Events);
             dateWindow.ShowDialog();
         }
     }

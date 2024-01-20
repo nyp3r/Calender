@@ -6,8 +6,9 @@
     xmlns:local="clr-namespace:Nyp3rCalender"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Title="DateWindow"
-    Width="300"
+    Width="440"
     Height="600"
+    ResizeMode="NoResize"
     mc:Ignorable="d">
 
     <Window.Resources>
@@ -21,17 +22,17 @@
     <Grid x:Name="dateGrid">
         <Grid.RowDefinitions>
             <RowDefinition />
-            <RowDefinition Height="60" />
+            <RowDefinition Height="40" />
         </Grid.RowDefinitions>
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition />
                 <RowDefinition Height="2*" />
                 <RowDefinition Height="4*" />
+                <RowDefinition Height="3*" />
+                <RowDefinition />
                 <RowDefinition Height="2*" />
-                <RowDefinition />
-                <RowDefinition />
-                <RowDefinition Height="4*" />
+                <RowDefinition Height="2*" />
             </Grid.RowDefinitions>
             <ComboBox
                 x:Name="eventPicker"
@@ -100,11 +101,13 @@
                     <ComboBox
                         x:Name="startHour"
                         Grid.Column="0"
-                        Margin="2" />
+                        Margin="2"
+                        VerticalContentAlignment="Center" />
                     <ComboBox
                         x:Name="startMinute"
                         Grid.Column="1"
-                        Margin="2" />
+                        Margin="2"
+                        VerticalContentAlignment="Center" />
                 </Grid>
                 <Grid Grid.Row="2" Grid.Column="2">
                     <Grid.ColumnDefinitions>
@@ -114,21 +117,29 @@
                     <ComboBox
                         x:Name="endHour"
                         Grid.Column="0"
-                        Margin="2" />
+                        Margin="2"
+                        VerticalContentAlignment="Center" />
                     <ComboBox
                         x:Name="endMinute"
                         Grid.Column="1"
-                        Margin="2" />
+                        Margin="2"
+                        VerticalContentAlignment="Center" />
                 </Grid>
                 <TextBlock
                     Grid.Row="2"
                     Style="{StaticResource textAlignment}"
                     Text="Ends" />
-                <DatePicker
-                    x:Name="endDate"
-                    Grid.Row="2"
-                    Grid.Column="1"
-                    Height="23" />
+                <Grid Grid.Row="2" Grid.Column="1" Margin="5">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="2.6*"/>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+                    <DatePicker
+                        x:Name="endDate"
+                        Grid.Column="0"
+                        Height="23" Grid.ColumnSpan="2" Margin="1,0,56,1" />
+                    <Button Grid.Column="1" Content="Same day" x:Name="insertSameDay"/>
+                </Grid>
 
                 <TextBlock
                     Grid.Row="3"
@@ -142,11 +153,13 @@
                     <ComboBox
                         x:Name="travelHour"
                         Grid.Column="0"
-                        Margin="2" />
+                        Margin="2"
+                        VerticalContentAlignment="Center" />
                     <ComboBox
                         x:Name="travelMinute"
                         Grid.Column="1"
-                        Margin="2" />
+                        Margin="2"
+                        VerticalContentAlignment="Center" />
                 </Grid>
             </Grid>
 
@@ -164,13 +177,8 @@
                 <ComboBox
                     x:Name="repeatPicker"
                     Grid.Column="2"
-                    Margin="2">
-                    <ComboBoxItem Content="Every day" />
-                    <ComboBoxItem Content="Every week" />
-                    <ComboBoxItem Content="Every second week" />
-                    <ComboBoxItem Content="Every month" />
-                    <ComboBoxItem Content="Every year" />
-                </ComboBox>
+                    Margin="2"
+                    VerticalContentAlignment="Center" />
 
                 <TextBlock
                     Grid.Row="1"
@@ -192,7 +200,8 @@
                 <TextBlock
                     Grid.Row="1"
                     Grid.Column="2"
-                    Margin="0,3,0,0"
+                    Margin="52,15,0,0"
+                    HorizontalAlignment="Left"
                     VerticalAlignment="Top"
                     Style="{StaticResource textAlignment}"
                     Text="Never" />
@@ -205,7 +214,10 @@
                     <ColumnDefinition Width="0.5*" />
                 </Grid.ColumnDefinitions>
                 <TextBlock Style="{StaticResource textAlignment}" Text="Color" />
-                <ComboBox x:Name="colorPicker" Grid.Column="2" />
+                <ComboBox
+                    x:Name="colorPicker"
+                    Grid.Column="2"
+                    VerticalContentAlignment="Center" />
             </Grid>
 
             <Grid Grid.Row="5" Margin="5">
@@ -216,19 +228,11 @@
                 </Grid.ColumnDefinitions>
 
                 <TextBlock Style="{StaticResource textAlignment}" Text="Alert" />
-                <ComboBox x:Name="alert" Grid.Column="2">
-                    <ComboBoxItem Content="None" />
-                    <ComboBoxItem Content="When the event begins" />
-                    <ComboBoxItem Content="5 minutes before" />
-                    <ComboBoxItem Content="10 minutes before" />
-                    <ComboBoxItem Content="15 minutes before" />
-                    <ComboBoxItem Content="30 minutes before" />
-                    <ComboBoxItem Content="1 hour before" />
-                    <ComboBoxItem Content="2 hour before" />
-                    <ComboBoxItem Content="1 day before" />
-                    <ComboBoxItem Content="2 day before" />
-                    <ComboBoxItem Content="1 week before" />
-                </ComboBox>
+                <ComboBox
+                    x:Name="alert"
+                    Grid.Column="2"
+                    Margin="5"
+                    VerticalContentAlignment="Center" />
             </Grid>
 
             <RichTextBox
@@ -252,17 +256,20 @@
                 <ColumnDefinition />
             </Grid.ColumnDefinitions>
             <Button
+                x:Name="add"
                 Grid.Column="2"
                 Background="LightBlue"
                 Content="+"
                 FontSize="30" />
             <Button
+                x:Name="save"
                 Grid.Column="0"
                 Background="LightBlue"
                 Content="Save"
                 FontSize="10"
                 FontWeight="Light" />
             <Button
+                x:Name="remove"
                 Grid.Column="1"
                 Background="LightBlue"
                 Content="Remove"
