@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Drawing;
 using Newtonsoft.Json;
 using System.IO;
+using System.Diagnostics.Eventing.Reader;
 
 namespace Nyp3rCalender
 {
@@ -42,26 +43,25 @@ namespace Nyp3rCalender
 
         public static void Save(Event ev)
         {
-            string filePath = "savedEvents.json";
-            string json = JsonConvert.SerializeObject(ev);
+            string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
 
-            try
-            {
-                // Ensure the directory exists
-                string directoryPath = Path.GetDirectoryName(filePath);
-                if (!Directory.Exists(directoryPath))
-                {
-                    Directory.CreateDirectory(directoryPath);
-                }
+            string filePath = Path.Combine(baseDirectory, "savedEvents.json");
 
-                // Write JSON to file
-                File.WriteAllText(filePath, json);
-                Console.WriteLine("Object written to file successfully.");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error writing to file: {ex.Message}");
-            }
+            string existingContent = File.ReadAllText(filePath);
+
+            List<Event> existingEvents = JsonConvert.DeserializeObject<List<Event>>(existingContent) ?? new List<Event>();
+            existingEvents.Add(ev);
+
+            string updatedContent = JsonConvert.SerializeObject(existingEvents, Formatting.Indented);
+            File.WriteAllText(filePath, updatedContent);
+        }
+
+        public static List<Event> Load()
+        {
+            string json = File.ReadAllText("savedEvents.json");
+            if (string.IsNullOrEmpty(json)) { return null; }
+            List<Event> events = JsonConvert.DeserializeObject<List<Event>>(json);
+            return events;
         }
     }
 }

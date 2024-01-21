@@ -9,6 +9,8 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Drawing;
+using System.Media;
+using System.Reflection;
 
 namespace Nyp3rCalender
 {
@@ -16,10 +18,10 @@ namespace Nyp3rCalender
     {
         private int monthIndex = 0;
         private List<Month> months = new List<Month>();
+        private List<Event> events = new List<Event>();
         readonly string[] weekDayAbrevs = { "Mo", "Tu", "We", "Th", "Fr", "Sa", "Su" };
         public MainWindow()
         {
-            
             months.Add(new Month("January", 31, 0));
             months.Add(new Month("February", 29, 3));
             months.Add(new Month("March", 31, 4));
@@ -50,6 +52,7 @@ namespace Nyp3rCalender
 
         private void RefreshWindow()
         {
+            events = Event.Load();
             string imagePath = "C:\\Users\\BjarkeJJ\\source\\repos\\Nyp3rCalender\\Images\\";
             monthName.Text = months[monthIndex].Name;
             daysGrid.Children.Clear();
@@ -70,46 +73,103 @@ namespace Nyp3rCalender
                 dayNumber.HorizontalAlignment = HorizontalAlignment.Center;
                 dayNumber.IsHitTestVisible = false;
 
-                Image eventIndicator1 = new Image();
-                BitmapImage bitmapEI1 = new BitmapImage();
-                bitmapEI1.BeginInit();
-                bitmapEI1.UriSource = new Uri(imagePath + "Transparent.png");
-                bitmapEI1.EndInit();
-                eventIndicator1.Source = bitmapEI1;
-                eventIndicator1.Height = 20;
+                BitmapImage source = new BitmapImage(new Uri(imagePath + "ellipsis.png"));
+                Image ellipsis = new Image();
+                ellipsis.Height = 20;
+                ellipsis.Width = 20;
+                ellipsis.Source = source;
+                ellipsis.Visibility = Visibility.Hidden;
+                Grid.SetRow(ellipsis,2);
+                Grid.SetColumn(ellipsis,2);
+
+                int thickness = 1;
+                System.Drawing.Color strokeColor = System.Drawing.Color.LightGray;
+                Ellipse eventIndicator1 = new Ellipse();
+                Ellipse eventIndicator2 = new Ellipse();
+                Ellipse eventIndicator3 = new Ellipse();
+                Ellipse eventIndicator4 = new Ellipse();
+                eventIndicator1.Stroke = new SolidColorBrush(System.Windows.Media.Color.FromArgb(strokeColor.A, strokeColor.R, strokeColor.G, strokeColor.B));
+                eventIndicator2.Stroke = new SolidColorBrush(System.Windows.Media.Color.FromArgb(strokeColor.A, strokeColor.R, strokeColor.G, strokeColor.B));
+                eventIndicator3.Stroke = new SolidColorBrush(System.Windows.Media.Color.FromArgb(strokeColor.A, strokeColor.R, strokeColor.G, strokeColor.B));
+                eventIndicator4.Stroke = new SolidColorBrush(System.Windows.Media.Color.FromArgb(strokeColor.A, strokeColor.R, strokeColor.G, strokeColor.B));
+                eventIndicator1.StrokeThickness = thickness;
+                eventIndicator2.StrokeThickness = thickness;
+                eventIndicator3.StrokeThickness = thickness;
+                eventIndicator4.StrokeThickness = thickness;
+                eventIndicator1.Margin = new Thickness(1,1,1,1);
+                eventIndicator2.Margin = new Thickness(1,1,1,1);
+                eventIndicator3.Margin = new Thickness(1,1,1,1);
+                eventIndicator4.Margin = new Thickness(1,1,1,1);
                 eventIndicator1.IsHitTestVisible = false;
-                Grid.SetColumn(eventIndicator1 , 0);
-                Grid.SetRow(eventIndicator1 , 2);
-
-                Image eventIndicator2 = new Image();
-                BitmapImage bitmapEI2 = new BitmapImage();
-                bitmapEI2.BeginInit();
-                bitmapEI2.UriSource = new Uri(imagePath + "Transparent.png");
-                bitmapEI2.EndInit();
-                eventIndicator2.Source = bitmapEI2;
-                eventIndicator2.Height = 20;
                 eventIndicator2.IsHitTestVisible = false;
-                Grid.SetColumn(eventIndicator2, 1);
-                Grid.SetRow(eventIndicator2, 2);
-
-                Image eventIndicator3 = new Image();
-                BitmapImage bitmapEI3 = new BitmapImage();
-                bitmapEI3.BeginInit();
-                bitmapEI3.UriSource = new Uri(imagePath + "Transparent.png");
-                bitmapEI3.EndInit();
-                eventIndicator3.Source = bitmapEI3;
-                eventIndicator3.Height = 20;
                 eventIndicator3.IsHitTestVisible = false;
-                Grid.SetColumn(eventIndicator3, 2);
-                Grid.SetRow(eventIndicator3, 2);
+                eventIndicator4.IsHitTestVisible = false;
+                Grid.SetRow(eventIndicator1 , 0); Grid.SetColumn(eventIndicator1, 0);
+                Grid.SetRow(eventIndicator2, 0); Grid.SetColumn(eventIndicator2, 1);
+                Grid.SetRow(eventIndicator3, 1); Grid.SetColumn(eventIndicator3, 0);
+                Grid.SetRow(eventIndicator4, 1); Grid.SetColumn(eventIndicator4, 1);
+                if (events.Count > 0)
+                {
+                    int evNum = 1;
+                    foreach (var ev in events)
+                    {
+                        int eventDay = i + 1;
+                        int eventMonth = monthIndex + 1;
+                        if(ev.StartDateTime.Day == eventDay && ev.StartDateTime.Month == eventMonth)
+                        {
+                            switch (evNum)
+                            {
+                                case 1:
+                                    eventIndicator1.Fill = new SolidColorBrush(System.Windows.Media.Color.FromArgb(
+                                    ev.Color.A, ev.Color.R, ev.Color.G, ev.Color.B));
+                                    break;
+
+                                case 2:
+                                    eventIndicator2.Fill = new SolidColorBrush(System.Windows.Media.Color.FromArgb(
+                                    ev.Color.A, ev.Color.R, ev.Color.G, ev.Color.B));
+                                    break;
+
+                                case 3:
+                                    eventIndicator3.Fill = new SolidColorBrush(System.Windows.Media.Color.FromArgb(
+                                    ev.Color.A, ev.Color.R, ev.Color.G, ev.Color.B));
+                                    break;
+
+                                case 4:
+                                    eventIndicator4.Fill = new SolidColorBrush(System.Windows.Media.Color.FromArgb(
+                                    ev.Color.A, ev.Color.R, ev.Color.G, ev.Color.B));
+                                    break;
+
+                                case 5:
+                                    ellipsis.Visibility = Visibility.Visible;
+                                    break;
+
+                                default:
+                                    break;
+                            }
+                            evNum++;
+                        } 
+                    }
+                }
+
+                Grid indicators = new Grid();
+                Grid.SetRow(indicators, 1); Grid.SetColumn(indicators, 2);
+                for (int å = 0; å < 2; å++)
+                {
+                    indicators.ColumnDefinitions.Add(new ColumnDefinition());
+                    indicators.RowDefinitions.Add(new RowDefinition());
+                }
+                indicators.Children.Add(eventIndicator1);
+                indicators.Children.Add(eventIndicator2);
+                indicators.Children.Add(eventIndicator3);
+                indicators.Children.Add(eventIndicator4);
+
 
                 Button dayButton = new Button();
                 dayButton.Background = Brushes.Transparent;
-                dayButton.Click += DateClick;
                 dayButton.Tag = i + 1;
+                dayButton.Click += DateClick;
 
                 Grid monthDay = new Grid();
-
                 for (int å = 0; å < 3; å++)
                 {
                     monthDay.ColumnDefinitions.Add(new ColumnDefinition());
@@ -123,14 +183,13 @@ namespace Nyp3rCalender
                 Grid.SetRowSpan(dayButton, 3);
 
                 weekDay.Text = weekDayAbrevs[c];
-                dayNumber.Text = $"{i + 1}.";
+                dayNumber.Text = Convert.ToString((int)dayButton.Tag);
 
                 monthDay.Children.Add(dayButton);
                 monthDay.Children.Add(weekDay);
                 monthDay.Children.Add(dayNumber);
-                monthDay.Children.Add(eventIndicator1);
-                monthDay.Children.Add(eventIndicator2);
-                monthDay.Children.Add(eventIndicator3);
+                monthDay.Children.Add(indicators);
+                monthDay.Children.Add(ellipsis);
 
                 Grid.SetColumn(monthDay, c);
                 Grid.SetRow(monthDay, r);
@@ -141,13 +200,15 @@ namespace Nyp3rCalender
 
         public void DateClick(object sender, EventArgs e)
         {
-            int currentMonthDay = (int)(sender as Button).Tag;
-            months[monthIndex].addEvent("Platform meeting", "Skolegade 7", "Meeting with members of Platform. Including: Hans and Nina", System.Drawing.Color.AliceBlue, false, "Every second\nweek", true, "1 day\nbefore");
-            months[monthIndex].Events[0].StartDateTime = new DateTime(2024,monthIndex+1,currentMonthDay,14,30,0);
-            months[monthIndex].Events[0].EndDateTime = new DateTime(2024, monthIndex+1, currentMonthDay, 15, 0, 0);
-            months[monthIndex].Events[0].TravelTime = TimeSpan.FromMinutes(0);
-            DateWindow dateWindow = new DateWindow(monthIndex+1,currentMonthDay, months[monthIndex].Events);
+            int day = Convert.ToInt16((sender as Button).Tag);
+            DateWindow dateWindow = new DateWindow(day, monthIndex + 1);
+            dateWindow.Closed += DateWindowClosed;
             dateWindow.ShowDialog();
+        }
+
+        public void DateWindowClosed(object sender, EventArgs e)
+        {
+            RefreshWindow();
         }
     }
 }

@@ -22,23 +22,35 @@ namespace Nyp3rCalender
     /// </summary>
     public partial class DateWindow : Window
     {
-        string startHourM;
-        string endHourM;
-        string startMinuteM;
-        string endMinuteM;
-        string endDateM;
-        string travelHourM;
-        string travelMinuteM;
-        string endRepeatDateM;
+        string startHourM = "";
+        string endHourM = "";
+        string startMinuteM = "";
+        string endMinuteM = "";
+        string endDateM = "";
+        string travelHourM = "";
+        string travelMinuteM = "";
+        string endRepeatDateM = "";
 
-        List<Event> events_ = new List<Event>();
-        private int month_;
-        private int day_;
-        public DateWindow(int month,int day, List<Event> events)
+        List<Event> events = new List<Event>();
+        private int month;
+        private int day;
+        public DateWindow(int day_, int month_)
         {
-            day_ = day;
-            month_ = month;
-            events_ = events;
+            day = day_;
+            month = month_;
+
+            List<Event> allEvents = Event.Load();
+            if (allEvents != null)
+            {
+                foreach (Event ev in allEvents)
+                {
+                    if (ev.StartDateTime.Day == day_ && ev.StartDateTime.Month == month_)
+                    {
+                        events.Add(ev);
+                    }
+                } 
+            }
+
             InitializeComponent();
 
             colorPicker.ItemsSource = ColorNames_Get();
@@ -194,7 +206,7 @@ namespace Nyp3rCalender
             travelHour.IsEnabled = true;
             travelMinute.IsEnabled = true;
             if(endDateM == string.Empty) { insertSameDay.IsEnabled = true; } 
-            else{ insertSameDay.IsEnabled = (Convert.ToInt16(endDateM[0] + endDateM[1]) != day_ && Convert.ToInt16(endDateM[3] + endDateM[4]) != month_) ? true : false; }
+            else{ insertSameDay.IsEnabled = (Convert.ToInt16(endDateM[0] + endDateM[1]) != day && Convert.ToInt16(endDateM[3] + endDateM[4]) != month) ? true : false; }
 
             startHour.Text = startHourM;
             startMinute.Text = startMinuteM;
@@ -216,13 +228,13 @@ namespace Nyp3rCalender
 
         public void InsertSameDay_Click(object sender, RoutedEventArgs e)//Currently being worked on
         {
-            endDate.Text = $"{day_}-{month_}-2024";
+            endDate.Text = $"{day}-{month}-2024";
             ((Button)sender).IsEnabled = false;
         }
 
         public void EndDate_Unfocused(object sender, RoutedEventArgs e)//Currently being worked on
         {
-            if(((DatePicker)sender).Text != $"{day_}-{month_}-2024")
+            if(((DatePicker)sender).Text != $"{day}-{month}-2024")
             {
                 insertSameDay.IsEnabled = true;
             }
@@ -250,8 +262,7 @@ namespace Nyp3rCalender
             }
 
             string? pickedEventName = ((ComboBox)sender).SelectedItem.ToString();
-
-            Event? pickedEvent = events_.FirstOrDefault(e => e.Name == pickedEventName);
+            Event? pickedEvent = events.FirstOrDefault(e => e.Name == pickedEventName);
 
             if(pickedEvent == null) 
             {
@@ -328,39 +339,43 @@ namespace Nyp3rCalender
                 Event newEvent = new(eventTitle.Text, location.Text, new TextRange(description.Document.ContentStart, description.Document.ContentEnd).Text, System.Drawing.Color.FromName(colorPicker.Text), (bool)wholeDay.IsChecked, repeatPicker.Text, (bool)repeatNever.IsChecked, alert.Text);
                 if (wholeDay.IsChecked == false)
                 {
-                    newEvent.StartDateTime = new DateTime(2024, month_, day_, Convert.ToInt16(startHour.Text), Convert.ToInt16(startMinute.Text), 0);
+                    newEvent.StartDateTime = new DateTime(2024, month, day, Convert.ToInt16(startHour.Text), Convert.ToInt16(startMinute.Text), 0);
                     newEvent.EndDateTime = new DateTime(2024, endDate.DisplayDate.Month, endDate.DisplayDate.Day, Convert.ToInt16(endHour.Text), Convert.ToInt16(endMinute.Text), 0);
                     newEvent.TravelTime = new TimeSpan(0, Convert.ToInt16(travelHour.Text), Convert.ToInt16(travelMinute.Text), 0);
+                }
+                else
+                {
+                    newEvent.StartDateTime = new DateTime(2024,month,day,0,0,0);
                 }
                 if (repeatNever.IsChecked == false)
                 {
                     newEvent.EndRepeatDate = new DateOnly(2024, endRepeatDate.DisplayDate.Month, endRepeatDate.DisplayDate.Day);
                 }
-                events_.Add(newEvent);
+                events.Add(newEvent);
                 eventPicker.Items.Add(newEvent.Name);
 
                 eventPicker.SelectedIndex = eventPicker.Items.Count-1;
+                Event.Save(newEvent);
                 return;
             }
 
             //saves existing event
             int i = eventPicker.SelectedIndex - 1;
-            events_[i].Name = eventTitle.Text;
-            events_[i].Location = location.Text;
-            events_[i].IsWholeDay = (wholeDay.IsChecked != null) ? (bool)wholeDay.IsChecked : false;
+            events[i].Name = eventTitle.Text;
+            events[i].Location = location.Text;
+            events[i].IsWholeDay = (wholeDay.IsChecked != null) ? (bool)wholeDay.IsChecked : false;
             if (wholeDay.IsChecked == null || !(bool)wholeDay.IsChecked)
             {
-                events_[i].StartDateTime = new DateTime(2024, month_, day_, Convert.ToInt16(startHour.Text), Convert.ToInt16(startMinute.Text), 0);
-                events_[i].EndDateTime = new DateTime(2024, endDate.DisplayDate.Month, endDate.DisplayDate.Day, Convert.ToInt16(endHour.Text), Convert.ToInt16(endMinute.Text), 0);
-                events_[i].TravelTime = new TimeSpan(0, Convert.ToInt16(travelHour.Text), Convert.ToInt16(travelMinute.Text), 0); 
+                events[i].StartDateTime = new DateTime(2024, month, day, Convert.ToInt16(startHour.Text), Convert.ToInt16(startMinute.Text), 0);
+                events[i].EndDateTime = new DateTime(2024, endDate.DisplayDate.Month, endDate.DisplayDate.Day, Convert.ToInt16(endHour.Text), Convert.ToInt16(endMinute.Text), 0);
+                events[i].TravelTime = new TimeSpan(0, Convert.ToInt16(travelHour.Text), Convert.ToInt16(travelMinute.Text), 0); 
             }
-            events_[i].Repeat = repeatPicker.Text;
-            events_[i].RepeatDoesntEnd = (repeatNever.IsChecked != null) ? (bool)repeatNever.IsChecked : false;
-            if (!events_[i].RepeatDoesntEnd){events_[i].EndRepeatDate = new DateOnly(2024, endRepeatDate.DisplayDate.Month, endRepeatDate.DisplayDate.Day);}            
-            events_[i].Color = System.Drawing.Color.FromName(colorPicker.Text);
-            events_[i].AlertBefore = alert.Text;
-            events_[i].Description = new TextRange(description.Document.ContentStart, description.Document.ContentEnd).Text;
-            Event.Save(events_[0]);
+            events[i].Repeat = repeatPicker.Text;
+            events[i].RepeatDoesntEnd = (repeatNever.IsChecked != null) ? (bool)repeatNever.IsChecked : false;
+            if (!events[i].RepeatDoesntEnd){events[i].EndRepeatDate = new DateOnly(2024, endRepeatDate.DisplayDate.Month, endRepeatDate.DisplayDate.Day);}            
+            events[i].Color = System.Drawing.Color.FromName(colorPicker.Text);
+            events[i].AlertBefore = alert.Text;
+            events[i].Description = new TextRange(description.Document.ContentStart, description.Document.ContentEnd).Text;
         }
 
         private void ClearUIInfo()
