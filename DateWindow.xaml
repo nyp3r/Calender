@@ -129,16 +129,24 @@
                     Grid.Row="2"
                     Style="{StaticResource textAlignment}"
                     Text="Ends" />
-                <Grid Grid.Row="2" Grid.Column="1" Margin="5">
+                <Grid
+                    Grid.Row="2"
+                    Grid.Column="1"
+                    Margin="5">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="2.6*"/>
-                        <ColumnDefinition/>
+                        <ColumnDefinition Width="2.6*" />
+                        <ColumnDefinition />
                     </Grid.ColumnDefinitions>
                     <DatePicker
                         x:Name="endDate"
                         Grid.Column="0"
-                        Height="23" Grid.ColumnSpan="2" Margin="1,0,56,1" />
-                    <Button Grid.Column="1" Content="Same day" x:Name="insertSameDay"/>
+                        Grid.ColumnSpan="2"
+                        Height="23"
+                        Margin="1,0,56,1" />
+                    <Button
+                        x:Name="insertSameDay"
+                        Grid.Column="1"
+                        Content="Same day" />
                 </Grid>
 
                 <TextBlock
@@ -214,10 +222,18 @@
                     <ColumnDefinition Width="0.5*" />
                 </Grid.ColumnDefinitions>
                 <TextBlock Style="{StaticResource textAlignment}" Text="Color" />
+                <Ellipse
+                    x:Name="ellipse"
+                    Grid.Column="1"
+                    Width="20"
+                    Height="20"
+                    Margin="3"
+                    HorizontalAlignment="Right"
+                    Stroke="LightGray" />
                 <ComboBox
                     x:Name="colorPicker"
                     Grid.Column="2"
-                    VerticalContentAlignment="Center" />
+                    VerticalContentAlignment="Center"/>
             </Grid>
 
             <Grid Grid.Row="5" Margin="5">
@@ -228,6 +244,7 @@
                 </Grid.ColumnDefinitions>
 
                 <TextBlock Style="{StaticResource textAlignment}" Text="Alert" />
+
                 <ComboBox
                     x:Name="alert"
                     Grid.Column="2"
@@ -259,13 +276,14 @@
                 x:Name="add"
                 Grid.Column="2"
                 Background="LightBlue"
-                Content="+"
-                FontSize="30" />
+                Content="Add"
+                FontSize="10" />
             <Button
                 x:Name="save"
                 Grid.Column="0"
                 Background="LightBlue"
-                Content="Save"
+                Click="save_Click"
+                Content="Save edit"
                 FontSize="10"
                 FontWeight="Light" />
             <Button

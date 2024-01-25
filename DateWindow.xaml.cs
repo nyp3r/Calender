@@ -14,6 +14,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using Microsoft.Toolkit.Uwp.Notifications;
 
 namespace Nyp3rCalender
 {
@@ -42,16 +43,21 @@ namespace Nyp3rCalender
             List<Event> allEvents = Event.Load();
             if (allEvents != null)
             {
-                foreach (Event ev in allEvents)
+                for (int i = 0; i < allEvents.Count; i++)
                 {
-                    if (ev.StartDateTime.Day == day_ && ev.StartDateTime.Month == month_)
+                    if (allEvents[i].StartDateTime.Day == day_ && allEvents[i].StartDateTime.Month == month_)
                     {
-                        events.Add(ev);
+                        events.Add(allEvents[i]);
                     }
                 } 
             }
 
             InitializeComponent();
+
+            if (events.Count == 0)
+            {
+                Add();
+            }
 
             colorPicker.ItemsSource = ColorNames_Get();
 
@@ -73,18 +79,22 @@ namespace Nyp3rCalender
             wholeDay.Unchecked += WholeDay_Unchecked;
 
             insertSameDay.Click += InsertSameDay_Click;
-            endDate.LostFocus += EndDate_Unfocused;
+            endDate.SelectedDateChanged += EndDate_Selected;
 
             repeatNever.Checked += NeverEndRepeat_Checked;
             repeatNever.Unchecked += NeverEndRepeat_Unchecked;
 
+            colorPicker.SelectionChanged += colorPicked;
+
             add.Click += Event_Add;
             save.Click += Event_Save;
+            remove.Click += Remove_Click;
 
 
 
             Title = "Day " + day.ToString();
-            eventPicker.Items.Add("New event");
+            ComboBoxItem addingNew = new ComboBoxItem { Content = "Adding...", Visibility = Visibility.Collapsed };
+            eventPicker.Items.Add(addingNew);
             foreach (Event e in events)
             {
                 eventPicker.Items.Add(e.Name);
@@ -122,6 +132,18 @@ namespace Nyp3rCalender
             alert.Items.Add("2 days\nbefore");
             alert.Items.Add("1 week\nbefore");
         }
+
+        public void Remove_Click(object sender, RoutedEventArgs e)
+        {
+            if (eventPicker.Text != "Adding...")
+            {
+                Event.Remove(events.FirstOrDefault(e => e.Name == eventPicker.Text));
+                eventPicker.Items.Remove(eventPicker.Text);
+                if (eventPicker.Items.Count > 1) { eventPicker.SelectedIndex = 1; }
+                else { Add(); }
+            }        
+        }
+
         private List<string> ColorNames_Get()
         {
             List<string> colorNames = new List<string>();
@@ -228,16 +250,17 @@ namespace Nyp3rCalender
 
         public void InsertSameDay_Click(object sender, RoutedEventArgs e)//Currently being worked on
         {
-            endDate.Text = $"{day}-{month}-2024";
+            endDate.SelectedDate = new DateTime(2024, month, day);
             ((Button)sender).IsEnabled = false;
         }
 
-        public void EndDate_Unfocused(object sender, RoutedEventArgs e)//Currently being worked on
+        public void EndDate_Selected(object sender, SelectionChangedEventArgs e)//Currently being worked on
         {
-            if(((DatePicker)sender).Text != $"{day}-{month}-2024")
+            if(((DatePicker)sender).SelectedDate != new DateTime(2024,month,day))
             {
                 insertSameDay.IsEnabled = true;
             }
+            eventTitle.Text = endDate.SelectedDate.ToString();
         }
 
         public void NeverEndRepeat_Checked(object sender, RoutedEventArgs e)
@@ -264,7 +287,7 @@ namespace Nyp3rCalender
             string? pickedEventName = ((ComboBox)sender).SelectedItem.ToString();
             Event? pickedEvent = events.FirstOrDefault(e => e.Name == pickedEventName);
 
-            if(pickedEvent == null) 
+            if (pickedEvent == null)
             {
                 return;
             }
@@ -299,31 +322,37 @@ namespace Nyp3rCalender
                 travelHour.SelectedValue = pickedEvent.TravelTime.Hours.ToString();
                 travelMinute.SelectedValue = pickedEvent.TravelTime.Minutes.ToString();
 
-
-                repeatPicker.SelectedValue = pickedEvent.Repeat;
-                repeatNever.IsChecked = pickedEvent.RepeatDoesntEnd;
-
-                if (pickedEvent.RepeatDoesntEnd)
-                {
-                    endRepeatDate.IsEnabled = false;
-                }
-                else
-                {
-                    endRepeatDate.Text = pickedEvent.EndRepeatDate.ToLongDateString();
-                }
-
-
-                colorPicker.SelectedValue = pickedEvent.Color.Name;
-                alert.SelectedValue =  pickedEvent.AlertBefore;
             }
+
+            repeatPicker.SelectedValue = pickedEvent.Repeat;
+
+            if (pickedEvent.RepeatDoesntEnd)
+            {
+                endRepeatDate.IsEnabled = false;
+                repeatNever.IsChecked = true;
+            }
+            else
+            {
+                endRepeatDate.Text = pickedEvent.EndRepeatDate.ToLongDateString();
+                repeatNever.IsChecked = false;
+            }
+
+            colorPicker.SelectedValue = pickedEvent.Color.Name;
+            alert.SelectedValue = pickedEvent.AlertBefore;
         }
 
         public void Event_Add(object sender, EventArgs e)
+        {
+            Add();
+        }
+
+        private void Add()
         {
             ClearUIInfo();
             remove.IsEnabled = false;
             eventTitle.Focus();
             eventPicker.SelectedIndex = 0;
+            save.Content = "Save addition";
         }
 
         public void Event_Save(object sender, EventArgs e)
@@ -340,12 +369,13 @@ namespace Nyp3rCalender
                 if (wholeDay.IsChecked == false)
                 {
                     newEvent.StartDateTime = new DateTime(2024, month, day, Convert.ToInt16(startHour.Text), Convert.ToInt16(startMinute.Text), 0);
-                    newEvent.EndDateTime = new DateTime(2024, endDate.DisplayDate.Month, endDate.DisplayDate.Day, Convert.ToInt16(endHour.Text), Convert.ToInt16(endMinute.Text), 0);
+                    newEvent.EndDateTime = new DateTime(2024, endDate.SelectedDate.Value.Month, endDate.SelectedDate.Value.Day, Convert.ToInt16(endHour.Text), Convert.ToInt16(endMinute.Text), 0);
                     newEvent.TravelTime = new TimeSpan(0, Convert.ToInt16(travelHour.Text), Convert.ToInt16(travelMinute.Text), 0);
                 }
                 else
                 {
                     newEvent.StartDateTime = new DateTime(2024,month,day,0,0,0);
+                    newEvent.EndDateTime = new DateTime(2024,month,day,0,0,0);
                 }
                 if (repeatNever.IsChecked == false)
                 {
@@ -355,7 +385,9 @@ namespace Nyp3rCalender
                 eventPicker.Items.Add(newEvent.Name);
 
                 eventPicker.SelectedIndex = eventPicker.Items.Count-1;
-                Event.Save(newEvent);
+                Event.Add(newEvent);
+                save.Content = "Save edit";
+                remove.IsEnabled = true;
                 return;
             }
 
@@ -367,7 +399,7 @@ namespace Nyp3rCalender
             if (wholeDay.IsChecked == null || !(bool)wholeDay.IsChecked)
             {
                 events[i].StartDateTime = new DateTime(2024, month, day, Convert.ToInt16(startHour.Text), Convert.ToInt16(startMinute.Text), 0);
-                events[i].EndDateTime = new DateTime(2024, endDate.DisplayDate.Month, endDate.DisplayDate.Day, Convert.ToInt16(endHour.Text), Convert.ToInt16(endMinute.Text), 0);
+                events[i].EndDateTime = new DateTime(2024, endDate.SelectedDate.Value.Month, endDate.SelectedDate.Value.Day, Convert.ToInt16(endHour.Text), Convert.ToInt16(endMinute.Text), 0);
                 events[i].TravelTime = new TimeSpan(0, Convert.ToInt16(travelHour.Text), Convert.ToInt16(travelMinute.Text), 0); 
             }
             events[i].Repeat = repeatPicker.Text;
@@ -376,6 +408,7 @@ namespace Nyp3rCalender
             events[i].Color = System.Drawing.Color.FromName(colorPicker.Text);
             events[i].AlertBefore = alert.Text;
             events[i].Description = new TextRange(description.Document.ContentStart, description.Document.ContentEnd).Text;
+            Event.Edit(events[i]);
         }
 
         private void ClearUIInfo()
@@ -402,7 +435,7 @@ namespace Nyp3rCalender
         private bool IsFilledIn()
         {
             TextRange textRange = new TextRange(description.Document.ContentStart, description.Document.ContentEnd);
-            if (eventTitle.Text != string.Empty && repeatPicker.SelectedItem.ToString() != string.Empty && colorPicker.SelectedItem.ToString() != string.Empty && alert.SelectedItem.ToString() != string.Empty && textRange.Text != string.Empty)
+            if (eventTitle.Text != string.Empty && repeatPicker.Text != string.Empty && colorPicker.Text != string.Empty && alert.Text != string.Empty && textRange.Text != string.Empty)
             {
                 if (wholeDay.IsChecked == true && repeatNever.IsChecked == true)
                 {
@@ -410,27 +443,41 @@ namespace Nyp3rCalender
                 }
                 else if (wholeDay.IsChecked == false && repeatNever.IsChecked == false)
                 {
-                    if(startHour.SelectedItem.ToString() != string.Empty && startMinute.SelectedItem.ToString() != string.Empty && endDate.Text != string.Empty && endHour.SelectedItem.ToString() != string.Empty && endMinute.SelectedItem.ToString() != string.Empty && travelHour.SelectedItem.ToString() != string.Empty && travelMinute.SelectedItem.ToString() != string.Empty && endRepeatDate.Text != string.Empty)
+                    if(startHour.Text != string.Empty && startMinute.Text != string.Empty && endDate.SelectedDate != null && endHour.Text != string.Empty && endMinute.Text != string.Empty && travelHour.Text != string.Empty && travelMinute.Text != string.Empty && endRepeatDate.Text != string.Empty)
                     {
                         return true;
                     }
                 }
                 else if (wholeDay.IsChecked == true && repeatNever.IsChecked == false)
                 {
-                    if (endRepeatDate.Text != string.Empty)
+                    if (endRepeatDate.SelectedDate != null)
                     {
                         return true;
                     }
                 }
                 else if(wholeDay.IsChecked == false && repeatNever.IsChecked == true)
                 {
-                    if (startHour.SelectedItem.ToString() != string.Empty && startMinute.SelectedItem.ToString() != string.Empty && endDate.Text != string.Empty && endHour.SelectedItem.ToString() != string.Empty && endMinute.SelectedItem.ToString() != string.Empty && travelHour.SelectedItem.ToString() != string.Empty && travelMinute.SelectedItem.ToString() != string.Empty)
+                    if (startHour.Text != string.Empty && startMinute.Text != string.Empty && endDate.SelectedDate != null && endHour.Text != string.Empty && endMinute.Text != string.Empty && travelHour.Text != string.Empty && travelMinute.Text != string.Empty)
                     {
                         return true;
                     }
                 }
             }
             return false;
+        }
+
+        public void save_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        public void colorPicked(object sender, SelectionChangedEventArgs e)
+        {
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                System.Drawing.Color color = System.Drawing.Color.FromName(colorPicker.Text);
+                ellipse.Fill = new SolidColorBrush(System.Windows.Media.Color.FromArgb(color.A, color.R, color.G, color.B));
+            }));
         }
     }
 }
